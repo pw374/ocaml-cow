@@ -1,11 +1,10 @@
 .PHONY: all clean depend install
 
-all: 
-	@./cmd configure
-	@./cmd build
+all:
+	obuild build
 
-install:
-	@./cmd install
+configure:
+	obuild configure
 
 clean:
-	@./cmd clean
+	obuild clean
