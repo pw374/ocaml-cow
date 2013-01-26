@@ -16,10 +16,11 @@
 
 { open Parser }
 
-let char = [^ ' ' '\t' '\r' '{' '}' ';' '\n' '/']
+let char = [^ ' ' '\t' '\r' '{' '}' ';' '\n']
 let space = [' ' '\t' '\r']
 let eol = ['\n']
-let value = char (char | space | eol)*
+let char_next = ['/']
+let value = char (char | space | eol | char_next)*
 
 (* very very very simple CSS lexer *)
 rule token = parse
