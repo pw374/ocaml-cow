@@ -1,3 +1,41 @@
+(*
+ * Copyright (c) 2010 Thomas Gazagnaire <thomas@gazagnaire.org>
+ *
+ * Permission to use, copy, modify, and distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *)
+
+type t = (('a Xmlm.frag as 'a) Xmlm.frag) list
+
+let id x = x
+
+let rec output_t o = function
+  | (`Data _ as d) :: t ->
+    Xmlm.output o d;
+    output_t o t
+  | (`El _ as e) :: t   ->
+    Xmlm.output_tree id o e;
+    Xmlm.output o (`Dtd None);
+    output_t o t
+  | [] -> ()
+
+let to_string t =
+  let buf = Buffer.create 1024 in
+  let o = Xmlm.make_output (`Buffer buf) in
+  (* XXX: check that this is working *)
+  Xmlm.output o (`Dtd (Some "HTML"));
+  output_t o t;
+  Buffer.contents buf
+
 (* XHTML 1.1 character entities.
    Transformed from the following data source:
    http://www.w3.org/\
@@ -263,3 +301,114 @@ let entity str =
     Some (List.assoc str entities)
   else
     None
+
+(*** XHTML parsing (using Xml) ***)
+let input_tree input =
+  let el (name, attrs) body : t = [ `El ((name, attrs), List.flatten body) ] in
+  let data s = [`Data s] in
+  Xmlm.input_tree ~el ~data input
+
+type encoding = [ `ISO_8859_1 | `US_ASCII | `UTF_16 | `UTF_16BE | `UTF_16LE | `UTF_8 ]
+
+let of_string ?encoding str =
+  (* It is illegal to write <:html<<b>foo</b>>> so we use a small trick and write
+     <:html<<b>foo</b>&>> *)
+  let str =
+    if str.[String.length str - 1] = '&' then
+      String.sub str 0 (String.length str - 1)
+    else
+      str in
+  (* input needs a root tag *)
+  let str = Printf.sprintf "<xxx>%s</xxx>" str in
+  try
+    let i = Xmlm.make_input ~enc:encoding ~entity (`String (0,str)) in
+    (* make_input builds a well-formed document, so discard the Dtd *)
+    (match Xmlm.peek i with
+    | `Dtd _ -> ignore (Xmlm.input i)
+    | _      -> ());
+    (* Remove the dummy root tag *)
+    match input_tree i with
+    | [ `El ((("","xxx"), []), body) ]-> body
+    | _ -> raise Parsing.Parse_error
+  with Xmlm.Error (pos, e) ->
+    Printf.eprintf "%s\nParsing error: line %d, characters %d-%d:\b%s\n" str (fst pos) (snd pos) (snd pos) (Xmlm.error_message e);
+    raise Parsing.Parse_error
+
+type link = {
+  text : string;
+  href: string;
+}
+
+let tag t ?(attributes=[]) xhtml: t =
+  let name s = ("", s) in
+  let attr (k,v) = name k, v in
+  [ `El ((name t, List.map attr attributes), xhtml) ]
+
+let string s = [`Data s]
+
+let link l : t =
+  tag "a" ~attributes:["href", l.href] (string l.text)
+
+let int i = of_string (string_of_int i)
+
+let float f = of_string (string_of_float f)
+
+let append l = List.flatten l
+
+let empty = []
+
+module Table = struct
+
+  let th t = tag "th" t
+
+  let tr t = tag "tr" t
+
+  let td t = tag "td" t
+
+  let caption t = tag "caption" t
+
+  let colgroup t = tag "colgroupt" t
+
+  let col t = tag "col" t
+
+  let thead t = tag "thead" t
+
+  let tbody t = tag "tbody" t
+
+  let tfoot t = tag "tfoot" t
+
+  let table ?(border=false) t =
+    let attributes = match border with
+      | true  -> ["border", "1"]
+      | false -> [] in
+    let row a = tr (append (List.map td (Array.to_list a))) in
+    let all = List.map row (Array.to_list t) in
+    tag "table" ~attributes (append all)
+
+end
+
+module List = struct
+
+  let ul t = tag "ul" t
+
+  let li t = tag "li" t
+
+  let ol t = tag "ol" t
+
+  let dl t = tag "dl" t
+
+  let dt t = tag "dt" t
+
+  let dd t = tag "dd" t
+
+  let unordered t =
+    ul (append (List.map li t))
+
+  let ordered t =
+    ol (append (List.map li t))
+
+  let definition t =
+    dl (append (List.map (fun (h,b) -> (dt h @ dd b)) t))
+
+end
+
