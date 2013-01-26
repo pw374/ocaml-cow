@@ -1,0 +1,20 @@
+name:        cow
+version:     0.5.0
+obuild-ver:  1
+description: OCaml-on-the-Web: Toolbox to write static websites
+authors:     Thomas Gazagnaire, Anil Madhavapeddy
+license:     ISC
+
+Library cow
+
+  path:         lib/cow/
+  modules:      Xhtml
+  buildDepends: xmlm, yojson
+
+Library cow.syntax
+
+  path:         syntax/
+  syntax:       true
+  pp:           camlp4o
+  modules:      Pa_cow
+  buildDepends: xmlm, dyntype.syntax, dyntype, re, ulex, camlp4.quotations.r, cow
