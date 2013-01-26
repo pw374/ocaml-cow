@@ -14,14 +14,29 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-(** Nested CSS *)
+{ open Parser }
 
-type t
+let char = [^ ' ' '\t' '\r' '{' '}' ';' '\n' '/']
+let space = [' ' '\t' '\r']
+let eol = ['\n']
+let value = char (char | space | eol)*
 
-val of_string: string -> t
+(* very very very simple CSS lexer *)
+rule token = parse
+  | space+     { token lexbuf }
+  | "/*"       { comments lexbuf; token lexbuf }
+  | '\n'       { Lexing.new_line lexbuf; token lexbuf }
+  | '{'        { OPEN  }
+  | '}'        { CLOSE }
+  | ';'        { SEMI }
+  | eof        { EOF }
+  | value as x {
+      for i = 0 to String.length x - 1 do
+        if x.[i] = '\n' then Lexing.new_line lexbuf;
+      done;
+      STRING x }
 
-val of_file: string ->t
-
-val to_string: t -> string
-
-val check: t -> t -> unit
+and comments = parse
+  | "*/" { () }
+  | '\n' { Lexing.new_line lexbuf; comments lexbuf }
+  | _    { comments lexbuf }

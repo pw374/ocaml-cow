@@ -16,12 +16,42 @@
 
 (** Nested CSS *)
 
-type t
+(** CSS declaration *)
+type declaration = {
+  property: string;
+  value: string;
+}
 
-val of_string: string -> t
+(** CSS statement. We allow statement to be nested (this is not in the
+   official CSS specification) *)
+type statement =
+  | Declaration of declaration
+  | Rule of rule
+  | At of string
 
-val of_file: string ->t
 
-val to_string: t -> string
+(** CSS rule *)
+and rule = {
+  selector: string;
+  body: statement list;
+}
 
-val check: t -> t -> unit
+(** Build a rule *)
+val rule: string -> statement list -> rule
+
+(** Build an at-rule *)
+val at: string -> statement
+
+(** Main type *)
+type t = statement list
+
+(** {2 Parsing} *)
+
+(** Read a declaration *)
+val declaration_of_string: string -> declaration
+
+(** Read a simple statement *)
+val simple_statement_of_string: string -> [`at of string | `decl of declaration]
+
+(** Lexing errors *)
+exception Lexing_error of string
