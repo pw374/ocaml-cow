@@ -31,9 +31,8 @@ let destruct_aq s =
   with Not_found ->
     "", s
 
-let aq_expander =
-object
-  inherit Ast.map as super
+let aq_expander = object
+  inherit Camlp4.PreCast.Ast.map as super
   method expr =
     function
       | Ast.ExAnt (_loc, s) ->
