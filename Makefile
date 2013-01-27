@@ -7,8 +7,9 @@ configure:
 	obuild configure --enable-tests
 
 test: all
-	dist/build/test-css/test-test-css lib_tests/css/bootstrap.css
-	dist/build/test-md/test-test-md lib_tests/md
+	obuild test
+#	dist/build/test-css/test-test-css lib_tests/css/bootstrap.css
+#	dist/build/test-md/test-test-md lib_tests/md
 
 clean:
 	obuild clean
