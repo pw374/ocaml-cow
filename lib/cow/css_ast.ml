@@ -64,7 +64,7 @@ let strip s =
 
 let rule selector body =
   let selector = strip selector in
-  { selector; body }
+  Rule { selector; body }
 
 let at s =
   At (strip s)

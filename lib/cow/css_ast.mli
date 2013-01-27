@@ -14,30 +14,44 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-{ open Parser }
+(** Nested CSS *)
 
-let char = [^ ' ' '\t' '\r' '{' '}' ';' '\n']
-let space = [' ' '\t' '\r']
-let eol = ['\n']
-let char_next = ['/']
-let value = char (char | space | eol | char_next)*
+(** CSS declaration *)
+type declaration = {
+  property: string;
+  value: string;
+}
 
-(* very very very simple CSS lexer *)
-rule token = parse
-  | space+     { token lexbuf }
-  | "/*"       { comments lexbuf; token lexbuf }
-  | '\n'       { Lexing.new_line lexbuf; token lexbuf }
-  | '{'        { OPEN  }
-  | '}'        { CLOSE }
-  | ';'        { SEMI }
-  | eof        { EOF }
-  | value as x {
-      for i = 0 to String.length x - 1 do
-        if x.[i] = '\n' then Lexing.new_line lexbuf;
-      done;
-      STRING x }
+(** CSS statement. We allow statement to be nested (this is not in the
+   official CSS specification) *)
+type statement =
+  | Declaration of declaration
+  | Rule of rule
+  | At of string
 
-and comments = parse
-  | "*/" { () }
-  | '\n' { Lexing.new_line lexbuf; comments lexbuf }
-  | _    { comments lexbuf }
+
+(** CSS rule *)
+and rule = {
+  selector: string;
+  body: statement list;
+}
+
+(** Build a rule *)
+val rule: string -> statement list -> statement
+
+(** Build an at-rule *)
+val at: string -> statement
+
+(** Main type *)
+type t = statement list
+
+(** {2 Parsing} *)
+
+(** Read a declaration *)
+val declaration_of_string: string -> declaration
+
+(** Read a simple statement *)
+val simple_statement_of_string: string -> [`at of string | `decl of declaration]
+
+(** Lexing errors *)
+exception Lexing_error of string

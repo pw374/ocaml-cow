@@ -15,7 +15,6 @@
  */
 
 %{
-open Ast
 %}
 
 %token <string> STRING
@@ -23,30 +22,19 @@ open Ast
 %token EOF
 %token SEMI
 
-%type <Ast.declaration> declaration
-%type <Ast.statement> statement
-%type <Ast.rule> rule
-%type <Ast.t> main
+%type <Css_ast.t> main
 
 %start main
 
 %%
 
-declaration:
-| STRING SEMI { Ast.declaration_of_string $1 }
-;;
-
-rule:
-| STRING OPEN statements CLOSE { Ast.rule $1 $3 }
-;;
-
 statement:
 | STRING SEMI {
-    match Ast.simple_statement_of_string $1 with
-    | `decl d -> Declaration d
-    | `at s   -> Ast.at s
+    match Css_ast.simple_statement_of_string $1 with
+    | `decl d -> Css_ast.Declaration d
+    | `at s   -> Css_ast.at s
   }
-| rule        { Rule $1 }
+| STRING OPEN statements CLOSE { Css_ast.rule $1 $3 }
 ;;
 
 statements:
@@ -75,5 +63,5 @@ let error lexbuf exn msg =
 let main token lexbuf =
   try main token lexbuf
   with
-  | Lexing_error msg     as e -> error lexbuf e msg
-  | Parsing.Parse_error as e -> error lexbuf e "parse error"
+  | Css_ast.Lexing_error msg as e -> error lexbuf e msg
+  | Parsing.Parse_error  as e -> error lexbuf e "parse error"

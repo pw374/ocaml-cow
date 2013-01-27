@@ -14,44 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-(** Nested CSS *)
+type t = (('a Xmlm.frag as 'a) Xmlm.frag) list
 
-(** CSS declaration *)
-type declaration = {
-  property: string;
-  value: string;
+type link = {
+  text: string;
+  href: string;
 }
 
-(** CSS statement. We allow statement to be nested (this is not in the
-   official CSS specification) *)
-type statement =
-  | Declaration of declaration
-  | Rule of rule
-  | At of string
-
-
-(** CSS rule *)
-and rule = {
-  selector: string;
-  body: statement list;
+type image = {
+  src: string;
+  alt: string;
 }
-
-(** Build a rule *)
-val rule: string -> statement list -> rule
-
-(** Build an at-rule *)
-val at: string -> statement
-
-(** Main type *)
-type t = statement list
-
-(** {2 Parsing} *)
-
-(** Read a declaration *)
-val declaration_of_string: string -> declaration
-
-(** Read a simple statement *)
-val simple_statement_of_string: string -> [`at of string | `decl of declaration]
-
-(** Lexing errors *)
-exception Lexing_error of string

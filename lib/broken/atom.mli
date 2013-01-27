@@ -1,5 +1,6 @@
 (*
  * Copyright (c) 2010 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2010-2013 Thomas Gazagnaire <thomas@gazagnaire.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,35 +17,39 @@
  *)
 
 type author = {
-  name  : string;
-  uri   : string option;
-  email : string option;
+  name : string;
+  uri  : string option;
+  email: string option;
 }
 
-type date = int * int * int * int * int
+type date = {
+  year : int;
+  month: int;
+  day  : int;
+  hour : int;
+  min  : int;
+}
 
 val compare : date -> date -> int
 
 type meta = {
-  id           : string;
-  title        : string;
-  subtitle     : string option;
-  author       : author option;
-  rights       : string option;
-  updated      : date;
+  id      : string;
+  title   : string;
+  subtitle: string option;
+  author  : author option;
+  rights  : string option;
+  updated : date;
 }
 
-type summary = string option
-
 type entry = {
-  entry   : meta;
-  summary : summary;
-  content : Xml.t;
+  entry  : meta;
+  summary: string option;
+  content: Xml.t;
 }
 
 type feed = {
-  feed    : meta;
-  entries : entry list;
+  feed   : meta;
+  entries: entry list;
 }
 
 val xml_of_feed : ?self:string -> feed -> Xml.t

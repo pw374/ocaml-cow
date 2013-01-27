@@ -6,9 +6,9 @@ authors:     Thomas Gazagnaire, Anil Madhavapeddy
 license:     ISC
 
 Library cow
-  path:         lib/cow
-  modules:      Xhtml, Css, Cass, Bootstrap, Md
-  buildDepends: xmlm, yojson, re.str
+  path:         lib/
+  modules:      Cow
+  buildDepends: xmlm, re.str
 
 # Library cow.syntax
 #   path:         syntax/
@@ -17,12 +17,14 @@ Library cow
 #   modules:      Pa_cow
 #   buildDepends: xmlm, dyntype.syntax, dyntype, re, ulex, camlp4.quotations.r, cow
 
-Executable test-css
+Test test-css
   path:         lib_tests/css
   mainIs:       test.ml
   buildDepends: cow
+  runDir:       lib_tests/css
 
-Executable test-md
+Test test-md
   path:         lib_tests/md
   mainIs:       test.ml
   buildDepends: cow
+  runDir:       lib_tests/md

@@ -14,7 +14,19 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type t = (('a Xmlm.frag as 'a) Xmlm.frag) list
+open Xhtml_ast
+
+type t = Xhtml_ast.t
+
+type image = Xhtml_ast.image =  {
+  src: string;
+  alt: string;
+}
+
+type link = Xhtml_ast.link = {
+  text: string;
+  href: string;
+}
 
 let id x = x
 
@@ -333,16 +345,6 @@ let of_string ?encoding str =
   with Xmlm.Error (pos, e) ->
     Printf.eprintf "%s\nParsing error: line %d, characters %d-%d:\b%s\n" str (fst pos) (snd pos) (snd pos) (Xmlm.error_message e);
     raise Parsing.Parse_error
-
-type link = {
-  text: string;
-  href: string;
-}
-
-type image = {
-  src: string;
-  alt: string;
-}
 
 let tag t ?(attributes=[]) xhtml: t =
   let name s = ("", s) in

@@ -14,11 +14,12 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type t = Cass.Ast.t
+open Css_ast
+type t = Css_ast.t
 
 let of_string str =
   let lexbuf = Lexing.from_string str in
-  Cass.Parser.main Cass.Lexer.token lexbuf
+  Css_parser.main Css_lexer.token lexbuf
 
 let of_file file =
   let ic = open_in file in
@@ -26,7 +27,7 @@ let of_file file =
   lexbuf.Lexing.lex_curr_p <-
     { lexbuf.Lexing.lex_curr_p with Lexing.pos_fname = file };
   try
-    let r = Cass.Parser.main Cass.Lexer.token lexbuf in
+    let r = Css_parser.main Css_lexer.token lexbuf in
     close_in ic;
     r
   with e ->
@@ -34,7 +35,6 @@ let of_file file =
     raise e
 
 let to_string t =
-  let open Cass.Ast in
   let buf = Buffer.create 1024 in
   let tab n = String.make (2*n) ' ' in
   let declaration n d =
@@ -51,7 +51,6 @@ let to_string t =
   Buffer.contents buf
 
 let assert_equal t1 t2 =
-  let open Cass.Ast in
   let string s1 s2 =
     if s1 <> s2 then (
       Printf.eprintf "%s <> %s!\n" s1 s2;

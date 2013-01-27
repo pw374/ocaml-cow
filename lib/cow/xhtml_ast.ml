@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2010 Thomas Gazagnaire <thomas@gazagnaire.org>
+ * Copyright (c) 2010-2013 Thomas Gazagnaire <thomas@gazagnaire.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,9 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-(** Convert a string into an xHTML fragment, where keywords have been classified
-    in different classes *)
-val ocaml : string -> Html.t
+type t = (('a Xmlm.frag as 'a) Xmlm.frag) list
 
-(** CSS fragment to colorize the keywords, depending on their class *)
-val ocaml_css : Css.t
+type link = {
+  text: string;
+  href: string;
+}
+
+type image = {
+  src: string;
+  alt: string;
+}

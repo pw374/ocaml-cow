@@ -1,5 +1,6 @@
 (*
  * Copyright (c) 2010 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2010-2013 Thomas Gazagnaire <thomas@gazagnaire.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,27 +21,55 @@
    http://www.atomenabled.org/developers/syndication/atom-format-spec.php
 *)
 type author = {
-  name: string;
-  uri: string option;
+  name : string;
+  uri  : string option;
   email: string option;
-} with xml
+}
 
-type date =
-    int * int * int * int * int (* year, month, date, hour, minute *)
-with xml
+let xml_of_author a =
+  Xml.tag "author" [
+    Xml.tag "name"  (Xml.string a.name);
+    Xml.tag "uri"   (Xml.string a.uri);
+    Xml.tag "email" (Xml.string a.email);
+  ]
 
-let xml_of_date (year,month,day,hour,min) =
-  let str = Printf.sprintf "%.4d-%.2d-%.2dT%.2d:%.2d:00Z" year month day hour min in
-  <:xml<$str:str$>>
+type date = {
+  year : int;
+  month: int;
+  day  : int;
+  hour : int;
+  min  : int;
+}
+
+let xml_of_date d =
+  let str = Printf.sprintf "%.4d-%.2d-%.2dT%.2d:%.2d:00Z" d.year d.month d.day d.hour d.min in
+  Xml.string str
 
 type meta = {
-  id: string;
-  title: string;
+  id      : string;
+  title   : string;
   subtitle: string option;
-  author: author option;
-  rights: string option;
-  updated: date;
-} with xml
+  author  : author option;
+  rights  : string option;
+  updated : date;
+}
+
+let xml_of_meta m =
+  let option v f = match v with
+    | None   -> []
+    | Some v -> f v in
+  let xml_of_subtitle s = Xml.tag "subtitle" (Xml.string s) in
+  let xml_of_rights s = Xml.tag "rights" (Xml.string s) in
+  Xml.tag "meta" (
+    Xml.append [
+      Xml.tag "id" (Xml.string m.id);
+      Xml.tag "title" (Xml.string m.title);
+    ]
+    @ option m.subtitle xml_of_subtitle
+    @ opton m.author xml_of_author
+    @ option m.rights xml_of_rights
+    @ [ xml_of_date d.date ]
+  )
 
 type content = Xml.t
 
