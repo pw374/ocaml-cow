@@ -1,3 +1,6 @@
+0.6.0 (trunk)
+* New (and hopefully better) API 
+
 0.5.2 (15-01-2013)
 * Remove dependency towards the Str module
 

@@ -1,5 +1,5 @@
 name:        cow
-version:     0.5.0
+version:     0.6.0
 obuild-ver:  1
 description: OCaml-on-the-Web: Toolbox to write static websites
 authors:     Thomas Gazagnaire, Anil Madhavapeddy
