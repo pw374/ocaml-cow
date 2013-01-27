@@ -21,10 +21,8 @@ Test test-css
   path:         lib_tests/css
   mainIs:       test.ml
   buildDepends: cow
-  runDir:       lib_tests/css
 
 Test test-md
   path:         lib_tests/md
   mainIs:       test.ml
   buildDepends: cow
-  runDir:       lib_tests/md
