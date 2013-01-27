@@ -14,14 +14,5 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-(** Nested CSS *)
-
-type t
-
-val of_string: string -> t
-
-val of_file: string ->t
-
-val to_string: t -> string
-
-val assert_equal: t -> t -> unit
+let anchor name =
+  Xhtml.div ["anchor-toc"] (Xhtml.anchor name)

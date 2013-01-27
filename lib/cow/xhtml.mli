@@ -25,6 +25,12 @@ type link = {
   href: string;
 }
 
+(** HTML images *)
+type image = {
+  src: string;
+  alt: string;
+}
+
 (** Convert to string *)
 val to_string : t -> string
 
@@ -42,6 +48,9 @@ val tag: string -> ?attributes:(string * string) list -> t -> t
 (** Convert a link to HTML *)
 val link: link -> t
 
+(** Convert an image to HTML *)
+val image: image -> t
+
 (** Convert a string to HTML *)
 val string: string -> t
 
@@ -56,6 +65,61 @@ val append: t list -> t
 
 (** The empty HTML node *)
 val empty: t
+
+(** Non-breaking space *)
+val nbsp: t
+
+(** Italic *)
+val i: t -> t
+
+(** Bold *)
+val b: t -> t
+
+(** Emphatize *)
+val em: t -> t
+
+(** Pre *)
+val pre: t -> t
+
+(** Paragraph *)
+val p: t -> t
+
+(** Code *)
+val code: t -> t
+
+(** Del *)
+val del: t -> t
+
+(** Blokquote *)
+val blockquote: t -> t
+
+(** {2 Headings} *)
+
+(** H1 *)
+val h1: t -> t
+
+(** H2 *)
+val h2: t -> t
+
+(** H3 *)
+val h3: t -> t
+
+(** H4 *)
+val h4: t -> t
+
+(** Structural elements *)
+
+(** Anchor *)
+val anchor: string -> t
+
+(** DIV *)
+val div: string list -> t -> t
+
+(** SPAN *)
+val span: string list -> t -> t
+
+(** Modify class attribute *)
+val with_class: string list -> t -> t
 
 (** HTML lists *)
 module List: sig

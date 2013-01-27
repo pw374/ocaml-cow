@@ -335,8 +335,13 @@ let of_string ?encoding str =
     raise Parsing.Parse_error
 
 type link = {
-  text : string;
+  text: string;
   href: string;
+}
+
+type image = {
+  src: string;
+  alt: string;
 }
 
 let tag t ?(attributes=[]) xhtml: t =
@@ -346,8 +351,20 @@ let tag t ?(attributes=[]) xhtml: t =
 
 let string s = [`Data s]
 
-let link l : t =
-  tag "a" ~attributes:["href", l.href] (string l.text)
+let empty = []
+
+let link l =
+  let attributes = [
+    ("href", l.href);
+  ] in
+  tag "a" ~attributes (string l.text)
+
+let image i =
+  let attributes = [
+    ("src", i.src);
+    ("alt", i.alt);
+  ] in
+  tag "img" ~attributes empty
 
 let int i = of_string (string_of_int i)
 
@@ -355,7 +372,64 @@ let float f = of_string (string_of_float f)
 
 let append l = List.flatten l
 
-let empty = []
+let i t = tag "i" t
+
+let b t = tag "b" t
+
+let em t = tag "em" t
+
+let del t = tag "del" t
+
+let code t = tag "code" t
+
+let pre t = tag "pre" t
+
+let blockquote t = tag "blockquote" t
+
+let p t = tag "p" t
+
+let nbsp = string "&nbsp;"
+
+let mk_class = function
+  | [] -> []
+  | cs -> [ ("class", String.concat " " cs) ]
+
+let div classes t =
+  let attributes = mk_class classes in
+  tag "div" ~attributes t
+
+let span classes t =
+  let attributes = mk_class classes in
+  tag "span" ~attributes t
+
+let with_class classes (t:t) =
+  match classes with
+  | [] -> t
+  | _  ->
+    match t with
+    | [`El ((name, attributes), body)] ->
+      let attributes = List.filter (fun ((k,_),_) -> k<>"class") attributes in
+      let attributes = (("","class"), String.concat " " classes) :: attributes in
+      [`El ((name, attributes), body)]
+    | _ -> failwith "with_class: not a valid tag!"
+
+let anchor name =
+  let attributes = [
+    ("name", name);
+  ] in
+  tag "a" ~attributes nbsp
+
+let h1 t =
+  tag "h1" t
+
+let h2 t =
+  tag "h2" t
+
+let h3 t =
+  tag "h3" t
+
+let h4 t =
+  tag "h4" t
 
 module Table = struct
 

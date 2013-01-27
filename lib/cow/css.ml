@@ -50,7 +50,7 @@ let to_string t =
   List.iter (statement 0) t;
   Buffer.contents buf
 
-let check t1 t2 =
+let assert_equal t1 t2 =
   let open Cass.Ast in
   let string s1 s2 =
     if s1 <> s2 then (
