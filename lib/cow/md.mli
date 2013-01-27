@@ -26,24 +26,24 @@
   OTHER DEALINGS IN THE SOFTWARE.
 *)
 
-type paragraph =
-  | Normal of text list
+type text =
+  | String of string
+  | Em of string
+  | Bold of string
+  | Del of string
+  | Code of string
+  | Link of Xhtml.link
+  | Anchor of string
+  | Image of Xhtml.image
+
+and paragraph =
+  | Paragraph of text list
   | Html of Xhtml.t
   | Pre of string * string option
   | Heading of int * text list
   | Quote of paragraph list
   | Ulist of paragraph list
   | Olist of paragraph list
-
-and text =
-  | Text of string
-  | Emph of string
-  | Bold of string
-  | Del of text list
-  | Code of string
-  | Link of Xhtml.link
-  | Anchor of string
-  | Image of Xhtml.image
 
 type t = paragraph list
 

@@ -26,8 +26,18 @@
   OTHER DEALINGS IN THE SOFTWARE.
 *)
 
-type paragraph =
-  | Normal of text list
+type text = Md_ast.text =
+  | String of string
+  | Em of string
+  | Bold of string
+  | Del of string
+  | Code of string
+  | Link of Xhtml.link
+  | Anchor of string
+  | Image of Xhtml.image
+
+and paragraph = Md_ast.paragraph =
+  | Paragraph of text list
   | Html of Xhtml.t
   | Pre of string * string option
   | Heading of int * text list
@@ -35,23 +45,24 @@ type paragraph =
   | Ulist of paragraph list
   | Olist of paragraph list
 
-and text =
-  | Text of string
-  | Emph of string
-  | Bold of string
-  | Del of text list
-  | Code of string
-  | Link of Xhtml.link
-  | Anchor of string
-  | Image of Xhtml.image
-
 type t = paragraph list
 
-let of_string _ =
-  failwith "TODO"
+let of_string str =
+  let lexbuf = Lexing.from_string str in
+  Md_parser.main Md_lexer.token lexbuf
 
-let of_file _ =
-  failwith "TODO"
+let of_file file =
+  let ic = open_in file in
+  let lexbuf = Lexing.from_channel ic in
+  lexbuf.Lexing.lex_curr_p <-
+    { lexbuf.Lexing.lex_curr_p with Lexing.pos_fname = file };
+  try
+    let r = Md_parser.main Md_lexer.token lexbuf in
+    close_in ic;
+    r
+  with e ->
+    close_in ic;
+    raise e
 
 (* Create a suitable ID given a Header element *)
 let id_of_heading (h: paragraph): string =
@@ -59,8 +70,8 @@ let id_of_heading (h: paragraph): string =
     let replace s = Re_str.global_replace (Re_str.regexp "[ ]+") "" s in
     String.concat "-" (List.map (fun t -> replace (text t)) tl)
   and text = function
-    | Text s | Emph s | Bold s | Code s | Anchor s -> s
-    | Del tl    -> text_list tl
+    | String s | Em s | Del s
+    | Bold s | Code s | Anchor s -> s
     | Link link -> link.Xhtml.text
     | Image img -> img.Xhtml.alt in
   match h with
@@ -70,10 +81,10 @@ let id_of_heading (h: paragraph): string =
   | _ -> failwith "id_of_heading: input element is not a heading!"
 
 let rec text = function
-  | Text t   -> Xhtml.string t
-  | Emph t   -> Xhtml.i (Xhtml.string t)
+  | String t -> Xhtml.string t
+  | Em t     -> Xhtml.i (Xhtml.string t)
   | Bold t   -> Xhtml.b (Xhtml.string t)
-  | Del tl   -> Xhtml.del (text_list tl)
+  | Del t    -> Xhtml.del (Xhtml.string t)
   | Code t   -> Xhtml.code (Xhtml.string t)
   | Link l   -> Xhtml.link l
   | Anchor a -> Xhtml.anchor a
@@ -89,7 +100,7 @@ let rec paragraph p =
       text_list tl;
     ] in
   match p with
-  | Normal tl       -> text_list tl
+  | Paragraph tl    -> text_list tl
   | Html html       -> Xhtml.p html
   | Pre (t,_)       -> Xhtml.pre (Xhtml.string t)
   | Heading (1,tl)  -> Xhtml.h1 (heading_content p tl)

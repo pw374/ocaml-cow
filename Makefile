@@ -8,8 +8,10 @@ configure:
 
 test: all
 	obuild test
-#	dist/build/test-css/test-test-css lib_tests/css/bootstrap.css
-#	dist/build/test-md/test-test-md lib_tests/md
+
+test-verbose:
+	dist/build/test-css/test-test-css lib_tests/css/bootstrap.css
+	dist/build/test-md/test-test-md lib_tests/md
 
 clean:
 	obuild clean
